@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Bookings</title>
+    <style>
+        /* Add your CSS styles here */
+        .booking {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .delete-button {
+            margin-right: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Your Bookings</h2>
+    {% if bookings %}
+        {% for booking in bookings %}
+            <div class="booking">
+                <p>Room: {{ booking.room_id }}, Day: {{ booking.day }}, Start Time: {{ booking.start_time }}, End Time: {{ booking.end_time }}</p>
+                <form action="/booking/{{ booking.id }}" method="post">
+                    <button class="delete-button" type="submit">Delete</button>
+                </form>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No bookings found.</p>
+    {% endif %}
+</body>
+</html>
