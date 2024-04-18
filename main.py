@@ -231,6 +231,29 @@ async def edit_booking(request: Request, rooms_id: str, booking_id: str):
     current_booking = firestore_db.collection('bookings').document(booking_id).get()
     return templates.TemplateResponse("edit_booking.html", {'request': request, 'user_token': user_token,  'user':user, 'current_booking':current_booking})
 
+@app.post("/change_booking_details/{booking_id}", response_class=HTMLResponse)
+async def change_booking_details(request: Request, booking_id: str):
+    id_token = request.cookies.get("token")
+    user_token = validateFirebaseToken(id_token)
+    if user_token == None:
+        return RedirectResponse("/")
+    
+    user = get_user(user_token)
+    form = await request.form()
+    booking_date = form['booking date']
+    booking_time = form['booking time']
 
+    booking_dion = firestore_db.collection('bookings').document(booking_id)
+    booking = booking_dion.get()
+    room_dion = firestore_db.collection('rooms').document(booking.get('room'))
+    current_room = room_dion.get()
 
-
+    if check_overlap_booking(current_room,booking_date,booking_time,booking_id):
+        return "Booking already exists on specific time, Redirecting you on Home Page in 3 Seconds... <meta http-equiv='refresh' content='3; URL=/' />"
+    
+    booking_data = {
+        'date': booking_date,
+        'time': booking_time
+    }
+    booking_dion.update(booking_data)
+    return "Booking Successfully Updated!!!"

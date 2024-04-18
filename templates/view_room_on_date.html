@@ -31,7 +31,7 @@
 		<button id="sign-out" class="btn btn-danger" hidden="true">Sign out</button>
 		
 		{% if user_token %}
-        <p class="table-success"> Current user email: {{user_token.email}}</p>
+        <p class="table-success"> Current User email: {{user_token.email}}</p>
 			<table class="table">
 				<tr>
 					<form action="/" method="get">
@@ -39,22 +39,22 @@
 					</form>
 				</tr>
 			</table>
-			<table class="table">
-                <th colspan="2">Edit Booking</th>
-                <form action="/edit_booking/{{current_booking.id}}" method="post">
-                    <tr>
-                        <td>Date: </td>
-                        <td> <input type="date" class="form-control" value="{{current_booking.get('date')}}" name="booking_date"> </td>
-                    </tr>
-                    <tr>
-                        <td>Time: </td>
-                        <td><input type="time" class="form-control" value="{{current_booking.get('time')}}" name="booking_time"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2"><input type="submit" class="btn btn-success" value="Update Booking"></td>
-                    </tr>
-                </form>
-            </table>
+			<table class="table table-bordered table-striped">
+				<th colspan="3" class="table-dark">Bookings on: {{selected_date}}</th>
+				<tr>
+					<th>Sr No.</th>
+					<th>Booking Date</th>
+					<th>Booking Time</th>
+				</tr>
+				{% for current_booking in bookings %}
+				
+					<tr>
+						<td>{{current_booking.get('date')}}</td>
+						<td>{{current_booking.get('time')}}</td>
+					</tr>
+					
+				{% endfor %}
+			</table>
         {% endif %}
     </body>
 </html>
