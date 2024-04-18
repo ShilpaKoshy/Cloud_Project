@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Room Schedular</title>
+		<link href="{{url_for('static', path='/style.css')}}" rel="stylesheet"/>
+		<script type="module" src="{{ url_for('static', path='/firebase-login.js')}}"></script>
+	</head>
+	<body style="text-align: center;">
+		<div id="login-box" style="text-align: center;" hidden="true">
+			<table style="text-align: center;width: 300px;" class="table">
+				<tr>
+					<td colspan="2">
+						<input type="email" class="form-control" name="" placeholder="Enter email" id="email"><br/>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						<input type="password" class="form-control" name="" placeholder="Enter password" id="password"><br/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<button id="login" class="btn btn-success">Login</button>
+					</td>
+					<td>
+						<button id="sign-up" class="btn btn-info">Sign Up</button>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<button id="sign-out" class="btn btn-danger" hidden="true">Sign out</button>
+		
+		{% if user_token %}
+		<p class="table-success"> Current User email: {{user_token.email}}</p>
+			<table class="table">
+				<tr>
+					<form action="/" method="get">
+						<td><input type="submit" class="btn btn-warning" value="Home"></td>
+					</form>
+				</tr>
+			</table>
+			<table class="table table-bordered table-striped">
+				<th colspan="6" class="table-dark" style="text-align: center;">All Bookings</th>
+				<tr>
+					<th style="text-align: center;">Sr No.</th>
+					<th style="text-align: center;">Room</th>
+					<th style="text-align: center;">Booking Date</th>
+					<th style="text-align: center;">Booking Time</th>
+					<th style="text-align: center;">Edit</th>
+					<th style="text-align: center;">Delete</th>
+				</tr>
+				{% for curren5_room in rooms %}
+					{% for current_booking in current_room.get('bookings') %}
+						<tr>
+							<td style="text-align: center;">{{loop.index}}</td>
+							<td style="text-align: center;">{{current_room.get('name')}}</td>
+							<td style="text-align: center;">{{current_booking.get().get('date')}}</td>
+							<td style="text-align: center;">{{current_booking.get().get('time')}}</td>
+							{% if current_booking.get().get('user') == user.get().get('user') %}
+							<td style="text-align: center;"><a href="/edit_bookings/{{current_room.id}}/{{current_booking.id}}"><button class="btn btn-info">Edit Booking</button></a></td>
+							<td style="text-align: center;"><a href="/delete_bookings/{{current_room.id}}/{{current_booking.id}}"><button class="btn btn-danger">Delete Booking</button></a></td>
+							{% else %}
+								<td style="text-align: center;">No Permissions</td>
+								<td style="text-align: center;">No Permissions</td>
+							{% endif %}
+						</tr>
+					{% endfor %}
+				{% endfor %}
+			</table>
+        {% endif %}
+    </body>
+</html>
