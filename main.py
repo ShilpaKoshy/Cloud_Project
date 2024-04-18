@@ -158,3 +158,48 @@ def check_overlap_booking(current_room,booking_date,booking_time,avoid_self):
             if booking.get().get('date') == booking_date and booking.get().get('time') == booking_time and booking.id != avoid_self:
                 return True
     return False
+
+@app.post("/add_bookings/{room_id}", response_class=HTMLResponse)
+async def add_bookings(request: Request, rooms_id: str):
+    id_token = request.cookies.get("token")
+    user_token = validateFirebaseToken(id_token)
+    if user_token == None:
+        return RedirectResponse("/")
+    
+    user = get_user(user_token)
+    current_user = user.get().get('user')
+    form = await request.form()
+    booking_date = form['booking_date']
+    booking_time = form['booking_time']
+
+    room_dion = firestore_db.collection('rooms').document(rooms_id)
+    current_room = room_dion.get()
+
+    if check_overlap_booking(current_room,booking_date,booking_time,None):
+        return "Booking already exists at the specified time"
+    
+    booking_dion = firestore_db.collection('bookings').document()
+    booking_data = {
+        'user': current_user,
+        'room': current_room.id,
+        'date': booking_date,
+        'time': booking_time
+    }
+    booking_dion.set(booking_data)
+    #print(booking_collection)
+    booking_id = current_room.get('bookings')
+    booking_id.append(booking_dion)
+    room_dion.update({'bookings':booking_id})
+    return "Booking Added Successfully!!"
+
+def check_overlap_booking(current_room,booking_date,booking_time,avoid_self):
+    bookings = current_room.get('bookings')
+    for booking in bookings:
+        if not avoid_self:
+            if booking.get().get('date') == booking_date and booking.get().get('time') == booking_time:
+                return True
+        else:
+            if booking.get().get('date') == booking_date and booking.get().get('time') == booking_time and booking.id != avoid_self:
+                return True
+    return False
+
