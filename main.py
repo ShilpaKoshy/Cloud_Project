@@ -159,8 +159,50 @@ def check_overlap_booking(current_room,booking_date,booking_time,avoid_self):
                 return True
     return False
 
-@app.post("/add_bookings/{room_id}", response_class=HTMLResponse)
-async def add_bookings(request: Request, rooms_id: str):
+@app.get("/view_rooms/{rooms_id}", response_class=HTMLResponse)
+async def view_room(request: Request, rooms_id: str):
+    id_token = request.cookies.get("token")
+    user_token = validateFirebaseToken(id_token)
+    if user_token == None:
+        return RedirectResponse("/")
+    user = get_user(user_token)
+    current_user = user.get().get('user')
+    room_dion = firestore_db.collection('rooms').document(rooms_id)
+    current_room = room_dion.get()
+    return templates.TemplateResponse("view_room.html", {'request': request, 'user_token': user_token, 'user':current_user, 'current_room':current_room})
+
+@app.get("/view_self_room/{rooms_id}", response_class=HTMLResponse)
+async def view_self_bookings(request: Request, rooms_id: str):
+    id_token = request.cookies.get("token")
+    user_token = validateFirebaseToken(id_token)
+    if user_token == None:
+        return RedirectResponse("/")
+    user = get_user(user_token)
+    current_user = user.get().get('user')
+    room_dion = firestore_db.collection('rooms').document(rooms_id)
+    current_room = room_dion.get()
+    return templates.TemplateResponse("view_room.html", {'request': request, 'user_token': user_token, 'user':user, 'current_room':current_room})
+
+@app.post("/view_all_the_bookings", response_class=HTMLResponse)
+async def view_all_bookings(request: Request):
+    id_token = request.cookies.get("token")
+    user_token = validateFirebaseToken(id_token)
+    if user_token == None:
+        return RedirectResponse("/")
+    
+    user = get_user(user_token)
+    rooms = get_current_users_rooms(user)
+    return templates.TemplateResponse("view_room.html", {'request': request, 'user_token': user_token, 'user':user, 'rooms':rooms})
+
+def get_current_users_rooms(user):
+    user_rooms = []
+    rooms_id = user.get().get('rooms')
+    for room in rooms_id:
+        user_rooms.append(room.get())
+    return user_rooms
+
+@app.get("/delete_bookings/{room_key}/{booking_key}", response_class=HTMLResponse)
+async def delete_booking(request: Request, rooms_id: str, booking_id: str):
     id_token = request.cookies.get("token")
     user_token = validateFirebaseToken(id_token)
     if user_token == None:
@@ -168,38 +210,27 @@ async def add_bookings(request: Request, rooms_id: str):
     
     user = get_user(user_token)
     current_user = user.get().get('user')
-    form = await request.form()
-    booking_date = form['booking_date']
-    booking_time = form['booking_time']
-
     room_dion = firestore_db.collection('rooms').document(rooms_id)
     current_room = room_dion.get()
+    booking_list = current_room.get('bookings')
+    booking_dion = firestore_db.collection('bookings').document(booking_id)
+    del booking_list[booking_list.index(booking_dion)]
+    room_dion.update({'bookings':booking_list})
+    booking_dion.delete()
+    return "Booking Deleted Successfully!!!"
 
-    if check_overlap_booking(current_room,booking_date,booking_time,None):
-        return "Booking already exists at the specified time"
+@app.get("/edit_booking/{rooms_id}/{booking_id}", response_class=HTMLResponse)
+async def edit_booking(request: Request, rooms_id: str, booking_id: str):
+    id_token = request.cookies.get("token")
+    user_token = validateFirebaseToken(id_token)
+    if user_token == None:
+        return RedirectResponse("/")
     
-    booking_dion = firestore_db.collection('bookings').document()
-    booking_data = {
-        'user': current_user,
-        'room': current_room.id,
-        'date': booking_date,
-        'time': booking_time
-    }
-    booking_dion.set(booking_data)
-    #print(booking_collection)
-    booking_id = current_room.get('bookings')
-    booking_id.append(booking_dion)
-    room_dion.update({'bookings':booking_id})
-    return "Booking Added Successfully!!"
+    user = get_user(user_token)
 
-def check_overlap_booking(current_room,booking_date,booking_time,avoid_self):
-    bookings = current_room.get('bookings')
-    for booking in bookings:
-        if not avoid_self:
-            if booking.get().get('date') == booking_date and booking.get().get('time') == booking_time:
-                return True
-        else:
-            if booking.get().get('date') == booking_date and booking.get().get('time') == booking_time and booking.id != avoid_self:
-                return True
-    return False
+    current_booking = firestore_db.collection('bookings').document(booking_id).get()
+    return templates.TemplateResponse("edit_booking.html", {'request': request, 'user_token': user_token,  'user':user, 'current_booking':current_booking})
+
+
+
 

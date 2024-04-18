@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Room Schedular</title>
+		<link href="{{url_for('static', path='/style.css')}}" rel="stylesheet"/>
+		<script type="module" src="{{ url_for('static', path='/firebase-login.js')}}"></script>
+	</head>
+	<body style="text-align: center;">
+		<div id="login-box" style="text-align: center;" hidden="true">
+			<table style="text-align: center;width: 300px;" class="table">
+				<tr>
+					<td colspan="2">
+						<input type="email" class="form-control" name="" placeholder="Enter email" id="email"><br/>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						<input type="password" class="form-control" name="" placeholder="Enter password" id="password"><br/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<button id="login" class="btn btn-success">Login</button>
+					</td>
+					<td>
+						<button id="sign-up" class="btn btn-info">Sign Up</button>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<button id="sign-out" class="btn btn-danger" hidden="true">Sign out</button>
+		
+		{% if user_token %}
+        <p class="table-success"> Current user email: {{user_token.email}}</p>
+			<table class="table">
+				<tr>
+					<form action="/" method="get">
+						<td><input type="submit" class="btn btn-warning" value="Home"></td>
+					</form>
+				</tr>
+			</table>
+			<table class="table">
+                <th colspan="2">Edit Booking</th>
+                <form action="/edit_booking/{{current_booking.id}}" method="post">
+                    <tr>
+                        <td>Date: </td>
+                        <td> <input type="date" class="form-control" value="{{current_booking.get('date')}}" name="booking_date"> </td>
+                    </tr>
+                    <tr>
+                        <td>Time: </td>
+                        <td><input type="time" class="form-control" value="{{current_booking.get('time')}}" name="booking_time"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><input type="submit" class="btn btn-success" value="Update Booking"></td>
+                    </tr>
+                </form>
+            </table>
+        {% endif %}
+    </body>
+</html>
